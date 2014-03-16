@@ -7,13 +7,14 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name" >
         <activity
-            android:name="com.wearscript.video.PlayActivity"
+            android:name=".PlaybackActivity"
             android:label="@string/title_activity_play" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -30,6 +31,22 @@
                 <data android:mimeType="video/*" />
             </intent-filter>
         </activity>
-    </application>
+        <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <receiver android:name=".WearScriptBroadcastReceiver">
+            <intent-filter>
+                <action android:name="com.wearscript.video.PLAYBACK"/>
+                <action android:name="com.wearscript.video.RECORD" />
+                <action android:name="com.wearscript.video.RECORD_RESULT" />
+            </intent-filter>
+        </receiver>
+
+
+</application>
 
 </manifest>

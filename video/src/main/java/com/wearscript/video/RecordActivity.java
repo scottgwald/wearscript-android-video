@@ -9,6 +9,8 @@ import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.PowerManager;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -20,10 +22,13 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import com.wearscript.video.WearScriptBroadcastReceiver;
+
 public class RecordActivity extends Activity implements SurfaceHolder.Callback {
     private final static String TAG = "RecordActivity";
+    private final static boolean DBG = true;
 
-    private final static int DEFAULT_DURATION = 10;
+    private final static int DEFAULT_DURATION = 3;
     private final static String PATH_KEY = "path";
     private final static String DURATION_KEY = "duration";
 
@@ -35,19 +40,33 @@ public class RecordActivity extends Activity implements SurfaceHolder.Callback {
 
     private String path;
     private int duration;
+    private Handler mHandler;
+    private String outputPath;
+    private PowerManager.WakeLock wl;
+    private boolean tryingToRecord;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG,"RecordActivity created");
+
+        PowerManager pm = (PowerManager)getSystemService(
+                POWER_SERVICE);
+            wl = pm.newWakeLock(
+                PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP
+                        | PowerManager.ON_AFTER_RELEASE, TAG);
+        wl.acquire();
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_record);
+        Handler mHandler = new Handler();
         Intent i = getIntent();
         path = i.getStringExtra(PATH_KEY);
         duration = i.getIntExtra(DURATION_KEY, DEFAULT_DURATION);
+
         if (path == null) {
             Log.d(TAG, "No path specified by intent");
             //TODO: handle
-            finish();
+            //finish();
         }
         Log.d(TAG,"Intent received, recording video of length " +
                 duration + " and saving it to " + path);
@@ -62,17 +81,29 @@ public class RecordActivity extends Activity implements SurfaceHolder.Callback {
 
     @Override
     protected void onResume() {
+        if (DBG) Log.v(TAG, "Lifecycle: onResume.");
         super.onResume();
         if (camera == null) {
             camera = getCameraInstance();
+        }
+
+        if (mHandler == null) {
+            mHandler = new Handler();
         }
     }
 
     @Override
     protected void onPause() {
-        super.onPause();
+        if (DBG) Log.v(TAG, "Lifecycle: onPause");
+        try {
+            wl.release();
+        } catch (Throwable th) {
+            // ignore
+        }
         releaseCamera();
         releaseMediaRecorder();
+        finish();
+        super.onPause();
     }
 
     void releaseCamera() {
@@ -145,10 +176,12 @@ public class RecordActivity extends Activity implements SurfaceHolder.Callback {
     }
 
     private void stopRecording() {
+        Log.v(TAG, "Stopping recording.");
         mediaRecorder.stop();
         releaseMediaRecorder();
         camera.lock();
         releaseCamera();
+        //finish();
     }
 
     /** A safe way to get an instance of the Camera object. */
@@ -164,7 +197,7 @@ public class RecordActivity extends Activity implements SurfaceHolder.Callback {
     }
 
     /** Create a File for saving an image or video */
-    private static File getOutputMediaFile(){
+    private File getOutputMediaFile(){
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES), "WearscriptVideo");
         if (! mediaStorageDir.exists()){
@@ -175,9 +208,15 @@ public class RecordActivity extends Activity implements SurfaceHolder.Callback {
         }
 
         // Create a media file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        File mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    "VID_"+ timeStamp + ".mp4");
+        if (path != null) {
+            outputPath = path;
+        } else {
+            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+            outputPath = mediaStorageDir.getPath() + File.separator +
+                    "VID_" + timeStamp + ".mp4";
+        }
+        File mediaFile = new File(outputPath);
+        Log.v(TAG, "Output file: " + outputPath);
         return mediaFile;
     }
 
@@ -203,6 +242,26 @@ public class RecordActivity extends Activity implements SurfaceHolder.Callback {
         }
 
         startRecording();
+
+        if (mHandler == null) {
+            Log.e(TAG, "WTF, Handler is null!!!");
+        } else {
+            Log.v(TAG, "Got a handler!");
+            this.mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    stopRecording();
+                    Intent result = new Intent();
+                    result.setAction(WearScriptBroadcastReceiver.RECORD_RESULT_ACTION);
+                    result.putExtra("path", outputPath);
+                    //sendBroadcast(result);
+                    setResult(RESULT_OK, result);
+                    Log.v(TAG, "Stopped recording, set result, finishing.");
+                    wl.release();
+                    finish();
+                }
+            }, duration * 1000);
+        }
     }
 
     @Override
@@ -214,4 +273,11 @@ public class RecordActivity extends Activity implements SurfaceHolder.Callback {
     public void surfaceDestroyed(SurfaceHolder holder) {
         //Do nothing
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.v(TAG, "onDestroyyyyyy");
+    }
+
 }
