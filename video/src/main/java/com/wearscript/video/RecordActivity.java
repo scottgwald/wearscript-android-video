@@ -34,7 +34,6 @@ public class RecordActivity extends Activity implements SurfaceHolder.Callback {
 
     private FrameLayout frame;
     private Camera camera;
-//    private CameraPreview cameraPreview;
     private SurfaceView cameraPreview;
     private MediaRecorder mediaRecorder;
 
@@ -66,12 +65,10 @@ public class RecordActivity extends Activity implements SurfaceHolder.Callback {
         if (path == null) {
             Log.d(TAG, "No path specified by intent");
             //TODO: handle
-            //finish();
         }
         Log.d(TAG,"Intent received, recording video of length " +
                 duration + " and saving it to " + path);
         camera = getCameraInstance();
-        //cameraPreview = new CameraPreview(RecordActivity.this, this.camera);
         cameraPreview = new SurfaceView(this);
         cameraPreview.getHolder().addCallback(this);
         cameraPreview.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
@@ -171,8 +168,6 @@ public class RecordActivity extends Activity implements SurfaceHolder.Callback {
         Log.d(TAG, "startRecording()");
         prepareVideoRecorder();
         mediaRecorder.start();
-
-        //TODO: in duration time, run stop Recording
     }
 
     private void stopRecording() {
@@ -181,7 +176,6 @@ public class RecordActivity extends Activity implements SurfaceHolder.Callback {
         releaseMediaRecorder();
         camera.lock();
         releaseCamera();
-        //finish();
     }
 
     /** A safe way to get an instance of the Camera object. */
