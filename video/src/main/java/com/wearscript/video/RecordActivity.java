@@ -32,6 +32,7 @@ public class RecordActivity extends Activity implements SurfaceHolder.Callback {
     private final static String PATH_KEY = "path";
     private final static String DURATION_KEY = "duration";
 
+    private int maximumWaitTimeForCamera = 5000;
     private FrameLayout frame;
     private Camera camera;
     private SurfaceView cameraPreview;
@@ -68,7 +69,8 @@ public class RecordActivity extends Activity implements SurfaceHolder.Callback {
         }
         Log.d(TAG,"Intent received, recording video of length " +
                 duration + " and saving it to " + path);
-        camera = getCameraInstance();
+        camera = getCameraInstanceRetry();
+        //cameraPreview = new CameraPreview(RecordActivity.this, this.camera);
         cameraPreview = new SurfaceView(this);
         cameraPreview.getHolder().addCallback(this);
         cameraPreview.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
@@ -81,7 +83,7 @@ public class RecordActivity extends Activity implements SurfaceHolder.Callback {
         if (DBG) Log.v(TAG, "Lifecycle: onResume.");
         super.onResume();
         if (camera == null) {
-            camera = getCameraInstance();
+            camera = getCameraInstanceRetry();
         }
 
         if (mHandler == null) {
@@ -190,6 +192,32 @@ public class RecordActivity extends Activity implements SurfaceHolder.Callback {
         return c; // returns null if camera is unavailable
     }
 
+    private Camera getCameraInstanceRetry() {
+        Camera c = null;
+        Log.v(TAG,"getTheCamera");
+        // keep trying to acquire the camera until "maximumWaitTimeForCamera" seconds have passed
+        boolean acquiredCam = false;
+        int timePassed = 0;
+        while (!acquiredCam && timePassed < maximumWaitTimeForCamera) {
+            try {
+                c = Camera.open();
+                Log.v(TAG,"acquired the camera");
+                acquiredCam = true;
+                return c;
+            }
+            catch (Exception e) {
+                Log.e(TAG,"Exception encountered opening camera:" + e.getLocalizedMessage());
+            }
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException ee) {
+                Log.e(TAG,"Exception encountered sleeping:" + ee.getLocalizedMessage());
+            }
+            timePassed += 200;
+        }
+        return c;
+    }
+
     /** Create a File for saving an image or video */
     private File getOutputMediaFile(){
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
@@ -216,6 +244,11 @@ public class RecordActivity extends Activity implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
+        if (camera == null) {
+            camera = getCameraInstanceRetry();
+        }
+
+        Log.v(TAG, "Is camera null? " + (camera == null));
         try {
             camera.setPreviewDisplay(holder);
 
@@ -233,6 +266,8 @@ public class RecordActivity extends Activity implements SurfaceHolder.Callback {
             camera.startPreview();
         } catch (IOException e) {
             Log.d(TAG, "Error setting camera preview: " + e.getMessage());
+        } catch (Throwable tr) {
+            Log.e(TAG, "OH. MY God. Throwable. ", tr);
         }
 
         startRecording();
