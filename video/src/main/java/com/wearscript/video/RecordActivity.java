@@ -6,7 +6,6 @@ import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -43,52 +42,54 @@ public class RecordActivity extends Activity implements SurfaceHolder.Callback {
     private Handler mHandler;
     private String outputPath;
     private PowerManager.WakeLock wl;
-    private boolean tryingToRecord;
+    private boolean wasAsleep;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG,"RecordActivity created");
-
+        super.onCreate(savedInstanceState);
         PowerManager pm = (PowerManager)getSystemService(
                 POWER_SERVICE);
+        wasAsleep = !pm.isScreenOn();
+        if (DBG) Log.v(TAG, "Screen was " + (wasAsleep ? "" : "not ") + "sleeping");
             wl = pm.newWakeLock(
                 PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP
                         | PowerManager.ON_AFTER_RELEASE, TAG);
         wl.acquire();
 
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_record);
-        Handler mHandler = new Handler();
-        Intent i = getIntent();
-        path = i.getStringExtra(PATH_KEY);
-        duration = i.getIntExtra(DURATION_KEY, DEFAULT_DURATION);
+        if (wasAsleep) {
+            Intent i = getIntent();
+            i.setClass(this, RecordActivity.class);
+            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(i);
+        } else {
+            setContentView(R.layout.activity_record);
+            mHandler = new Handler();
+            Intent i = getIntent();
+            path = i.getStringExtra(PATH_KEY);
+            duration = i.getIntExtra(DURATION_KEY, DEFAULT_DURATION);
 
-        if (path == null) {
-            Log.d(TAG, "No path specified by intent");
-            //TODO: handle
+            if (path == null) {
+                if (DBG) Log.d(TAG, "No path specified by intent");
+            }
+            Log.d(TAG, "Intent received, recording video of length " + duration);
+
+            camera = getCameraInstanceRetry();
+            Log.v(TAG, "Doing proceedWithMain");
+
+            //cameraPreview = new CameraPreview(RecordActivity.this, this.camera);
+            cameraPreview = new SurfaceView(this);
+            cameraPreview.getHolder().addCallback(this);
+            cameraPreview.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+            frame = (FrameLayout)super.findViewById(R.id.camera_preview);
+            frame.addView(this.cameraPreview);
         }
-        Log.d(TAG,"Intent received, recording video of length " +
-                duration + " and saving it to " + path);
-        camera = getCameraInstanceRetry();
-        //cameraPreview = new CameraPreview(RecordActivity.this, this.camera);
-        cameraPreview = new SurfaceView(this);
-        cameraPreview.getHolder().addCallback(this);
-        cameraPreview.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-        frame = (FrameLayout)super.findViewById(R.id.camera_preview);
-        frame.addView(this.cameraPreview);
     }
 
     @Override
     protected void onResume() {
         if (DBG) Log.v(TAG, "Lifecycle: onResume.");
         super.onResume();
-        if (camera == null) {
-            camera = getCameraInstanceRetry();
-        }
-
-        if (mHandler == null) {
-            mHandler = new Handler();
-        }
     }
 
     @Override
@@ -124,11 +125,11 @@ public class RecordActivity extends Activity implements SurfaceHolder.Callback {
 
     private boolean prepareVideoRecorder(){
         try {
+            camera.stopPreview();
             camera.setPreviewDisplay(null);
         } catch (java.io.IOException ioe) {
             Log.d(TAG, "IOException nullifying preview display: " + ioe.getMessage());
         }
-        camera.stopPreview();
         camera.unlock();
 
         mediaRecorder = new MediaRecorder();
@@ -176,7 +177,6 @@ public class RecordActivity extends Activity implements SurfaceHolder.Callback {
         Log.v(TAG, "Stopping recording.");
         mediaRecorder.stop();
         releaseMediaRecorder();
-        camera.lock();
         releaseCamera();
     }
 
@@ -248,7 +248,9 @@ public class RecordActivity extends Activity implements SurfaceHolder.Callback {
             camera = getCameraInstanceRetry();
         }
 
-        Log.v(TAG, "Is camera null? " + (camera == null));
+        if (DBG) Log.v(TAG, "Is camera null? " + (camera == null));
+        if (DBG) Log.v(TAG, "is holder null? " + (holder == null));
+
         try {
             camera.setPreviewDisplay(holder);
 
@@ -295,6 +297,7 @@ public class RecordActivity extends Activity implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        if (DBG) Log.v(TAG, "SurfaceChanged " + format + " " + width + " " + height);
         //Do nothing
     }
 
