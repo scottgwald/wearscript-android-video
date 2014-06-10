@@ -4,6 +4,6 @@
     android:layout_height="match_parent"
     android:id="@+id/camera_preview"
     tools:ignore="MergeRootFrame"
-    tools:context="com.wearscript.video.RecordActivity">
+    tools:context="com.wearscript.record.RecordActivity">
 
 </FrameLayout>

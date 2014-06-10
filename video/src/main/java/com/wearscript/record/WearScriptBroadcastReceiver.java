@@ -1,4 +1,4 @@
-package com.wearscript.video;
+package com.wearscript.record;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

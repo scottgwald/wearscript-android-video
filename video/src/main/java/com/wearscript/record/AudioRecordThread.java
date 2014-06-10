@@ -1,4 +1,4 @@
-package com.wearscript.audio;
+package com.wearscript.record;
 
 import android.media.AudioFormat;
 import android.media.AudioRecord;

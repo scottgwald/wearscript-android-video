@@ -1,4 +1,4 @@
-package com.wearscript.video;
+package com.wearscript.record;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -7,6 +7,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.VideoView;
+
+import com.wearscript.video.R;
 
 import java.io.File;
 

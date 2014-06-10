@@ -14,7 +14,7 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name" >
         <activity
-            android:name=".PlaybackActivity"
+            android:name="com.wearscript.record.PlaybackActivity"
             android:label="@string/title_activity_play" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -23,7 +23,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.wearscript.video.RecordActivity"
+            android:name="com.wearscript.record.RecordActivity"
             android:label="@string/title_activity_record" >
             <intent-filter>
                 <action android:name="android.intent.action.EDIT" />
@@ -34,7 +34,7 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".WearScriptBroadcastReceiver">
+        <receiver android:name="com.wearscript.record.WearScriptBroadcastReceiver">
             <intent-filter>
                 <action android:name="com.wearscript.video.PLAYBACK"/>
                 <action android:name="com.wearscript.video.RECORD" />

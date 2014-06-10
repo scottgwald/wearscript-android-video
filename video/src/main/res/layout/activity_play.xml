@@ -2,7 +2,7 @@
 xmlns:tools="http://schemas.android.com/tools"
 android:layout_width="match_parent"
 android:layout_height="match_parent"
-tools:context="com.wearscript.video.PlaybackActivity">
+tools:context="com.wearscript.record.PlaybackActivity">
 
 <VideoView
     android:id = "@+id/video"
