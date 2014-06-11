@@ -21,16 +21,16 @@ public class AudioRecorder extends Service {
     public void onCreate() {
         super.onCreate();
 
-        Log.d("Memora", "Service Started");
+        Log.d(LOG_TAG, "Service Started");
         createMemoraDirectory();
 
-        recorder = new AudioRecordThread();
+        recorder = new AudioRecordThread(this);
 		recorder.start();
     }
 
     @Override
     public void onDestroy() {
-    	Log.d("Memora", "Service Destroy");
+    	Log.d(LOG_TAG, "Service Destroy");
     	recorder.interrupt();
         super.onDestroy();
     }
@@ -50,7 +50,7 @@ public class AudioRecorder extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent.getAction() != null && intent.getAction().equals("save_audio_intent")) {
+        if (intent.getAction() != null && intent.getAction().equals("com.wearscript.record.SAVE_AUDIO")) {
             Log.d(LOG_TAG, "Got message");
             long millis = intent.getExtras().getLong(MILLIS_EXTRA_KEY);
             Log.d(LOG_TAG, "millis: " + millis);

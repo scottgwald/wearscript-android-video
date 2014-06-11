@@ -42,6 +42,18 @@
             </intent-filter>
         </receiver>
 
+        <service
+            android:name="com.wearscript.record.AudioRecorder"
+            android:enabled="true"
+            android:label="@string/app_name">
+
+            <intent-filter>
+                <action android:name="com.wearscript.record.RECORD_AUDIO" />
+                <action android:name="com.wearscript.record.SAVE_AUDIO" />
+            </intent-filter>
+
+        </service>
+
 
 </application>
 
