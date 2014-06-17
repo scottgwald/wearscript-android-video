@@ -118,10 +118,6 @@ public class AudioRecordThread extends Thread{
     private String audioFileName(long millis) {
         return directoryAudio + File.separator + String.valueOf(millis) + ".wav";
     }
-    //TODO what does this do and why is this here
-    public String saveAudio(){
-    	return "Failed";
-    }
 
     private void writeAudioDataToFile() {
     	int totalAudioLen = buffers.size() * bufferSize;
