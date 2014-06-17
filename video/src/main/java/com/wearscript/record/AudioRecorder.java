@@ -22,7 +22,7 @@ public class AudioRecorder extends Service {
         super.onCreate();
 
         Log.d(LOG_TAG, "Service Started");
-        createMemoraDirectory();
+        createDirectory();
 
         recorder = new AudioRecordThread(this);
 		recorder.start();
@@ -41,7 +41,7 @@ public class AudioRecorder extends Service {
 		throw new UnsupportedOperationException("Not yet implemented");
 	}
 	
-	private void createMemoraDirectory(){
+	private void createDirectory(){
         File directory = new File(AudioRecordThread.directoryAudio);
         if (!directory.isDirectory()){
         	directory.mkdirs();
