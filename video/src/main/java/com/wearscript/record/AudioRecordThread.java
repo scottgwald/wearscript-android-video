@@ -74,7 +74,7 @@ public class AudioRecordThread extends Thread{
                 buffers.add(new byte[bufferSize]);
                 recorder.read(buffers.get(buffers.size()-1),0,bufferSize);
             }
-            pollRingBuffer();
+            mergeBuffers();
             writeAudioDataToFile();
             pollingBuffer = false;
             Log.d(LOG_TAG, "Audio Saved");
@@ -101,8 +101,8 @@ public class AudioRecordThread extends Thread{
     	return latestFilePath;
     }
     
-    private void pollRingBuffer(){
-        Log.d(LOG_TAG, "in pollRingBuffer()");
+    private void mergeBuffers(){
+        Log.d(LOG_TAG, "in mergeBuffers()");
     	int i;
     	int j;
         int ix = 0;
