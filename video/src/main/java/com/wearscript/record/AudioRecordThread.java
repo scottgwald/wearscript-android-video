@@ -15,12 +15,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class AudioRecordThread extends Thread{
-	
-	private static final String LOG_TAG = "Audio";
+
+    private static final String LOG_TAG = "Audio";
 	
 	private static final int RECORDER_SAMPLERATE = 8000;
 	private static final int ENCODING_TYPE = AudioFormat.ENCODING_PCM_16BIT;
-	private final int CHANNEL_TYPE = AudioFormat.CHANNEL_IN_MONO;
+    public static final int WAV_HEADER_LENGTH = 44;
+    private final int CHANNEL_TYPE = AudioFormat.CHANNEL_IN_MONO;
 	private final int NUM_CHANNELS = 1;
 	private byte BITS_PER_SAMPLE = 16;  
 	private final int AUDIO_SOURCE = AudioSource.MIC;
@@ -123,7 +124,7 @@ public class AudioRecordThread extends Thread{
     	int totalAudioLen = buffers.size() * bufferSize;
         int totalDataLen = (totalAudioLen * NUM_CHANNELS * BITS_PER_SAMPLE / 8) + 36;
 	    //String filePath = audioFileName();
-	    byte header[] = new byte[44];
+	    byte header[] = new byte[WAV_HEADER_LENGTH];
 	    byte wavFile[] = new byte[totalAudioLen + header.length];
 	    
 	    FileOutputStream os = null;
