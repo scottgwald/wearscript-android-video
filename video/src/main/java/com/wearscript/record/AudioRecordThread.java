@@ -46,9 +46,7 @@ public class AudioRecordThread extends Thread{
     Context context;
 	
     public AudioRecordThread(Context context)
-    { 
-    	//Try this at lower priorities.
-        android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);
+    {
         this.context = context;
     }
 
