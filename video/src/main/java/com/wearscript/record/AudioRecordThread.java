@@ -167,9 +167,9 @@ public class AudioRecordThread extends Thread{
         header[29] = (byte) ((BYTE_RATE >> 8) & 0xff);
         header[30] = (byte) ((BYTE_RATE >> 16) & 0xff);
         header[31] = (byte) ((BYTE_RATE >> 24) & 0xff);
-        header[32] = (byte) (NUM_CHANNELS * BITS_PER_SAMPLE / 8);//(2 * 16 / 8);  // block align (might be half what it should be)
+        header[32] = (byte) (NUM_CHANNELS * BITS_PER_SAMPLE / 8);
         header[33] = 0;
-        header[34] = BITS_PER_SAMPLE;  // bits per sample
+        header[34] = BITS_PER_SAMPLE;
         header[35] = 0;
         header[36] = 'd';
         header[37] = 'a';
