@@ -13,9 +13,6 @@ public class AudioRecorder extends Service {
 
     private AudioRecordThread recorder;
     public static String MILLIS_EXTRA_KEY = "millis";
-	
-	public AudioRecorder() {
-	}
 
 	@Override
     public void onCreate() {
