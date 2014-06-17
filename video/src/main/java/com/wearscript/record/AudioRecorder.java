@@ -38,7 +38,7 @@ public class AudioRecorder extends Service {
 		throw new UnsupportedOperationException("Not yet implemented");
 	}
 	
-	private void createDirectory(){
+	private void createDirectory() {
         File directory = new File(AudioRecordThread.directoryAudio);
         if (!directory.isDirectory()){
         	directory.mkdirs();
