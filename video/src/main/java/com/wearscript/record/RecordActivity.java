@@ -21,8 +21,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
-import com.wearscript.video.R;
-
 public class RecordActivity extends Activity implements SurfaceHolder.Callback {
     private final static String TAG = "RecordActivity";
     private final static boolean DBG = true;

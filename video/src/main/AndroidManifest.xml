@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.wearscript.video" >
+    package="com.wearscript.record" >
 
     <uses-feature android:name="android.hardware.camera" />
 
@@ -36,9 +36,9 @@
 
         <receiver android:name="com.wearscript.record.WearScriptBroadcastReceiver">
             <intent-filter>
-                <action android:name="com.wearscript.video.PLAYBACK"/>
-                <action android:name="com.wearscript.video.RECORD" />
-                <action android:name="com.wearscript.video.RECORD_RESULT" />
+                <action android:name="com.wearscript.record.PLAYBACK"/>
+                <action android:name="com.wearscript.record.RECORD" />
+                <action android:name="com.wearscript.record.RECORD_RESULT" />
             </intent-filter>
         </receiver>
 
