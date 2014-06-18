@@ -5,7 +5,9 @@ import android.content.Intent;
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.media.CamcorderProfile;
+import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -13,6 +15,7 @@ import android.os.PowerManager;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 import android.widget.FrameLayout;
 
 import java.io.File;
@@ -43,6 +46,9 @@ public class RecordActivity extends Activity implements SurfaceHolder.Callback {
     private String outputPath;
     private PowerManager.WakeLock wl;
     private boolean wasAsleep;
+    private SurfaceView dummy;
+
+    private MediaPlayer mp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,10 +85,96 @@ public class RecordActivity extends Activity implements SurfaceHolder.Callback {
 
             //cameraPreview = new CameraPreview(RecordActivity.this, this.camera);
             cameraPreview = new SurfaceView(this);
+            dummy = new SurfaceView(this);
+
+
+            dummy.getHolder().addCallback(new SurfaceHolder.Callback() {
+                @Override
+                public void surfaceCreated(SurfaceHolder holder)
+                {
+                    Log.d("HERE","must do this");
+                    if (camera == null) {
+                        camera = getCameraInstanceRetry();
+                    }
+                    if (DBG) Log.v(TAG, "Is camera null? " + (camera == null));
+                    if (DBG) Log.v(TAG, "is holder null? " + (holder == null));
+
+                    try {
+                        camera.setPreviewDisplay(holder);
+
+                        //DEBUG
+                        Camera.Parameters params = camera.getParameters();
+                        params.setPreviewFormat(ImageFormat.NV21);
+                        params.setPreviewSize(640, 480);
+                        List<String> FocusModes = params.getSupportedFocusModes();
+                        if (FocusModes != null && FocusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
+                            params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
+                        }
+                        params.setPreviewFpsRange(30000, 30000);
+                        camera.setParameters(params);
+                        holder.setFixedSize(640, 360);
+                        //camera.startPreview();
+                    } catch (IOException e) {
+                        Log.d(TAG, "Error setting camera preview: " + e.getMessage());
+                    } catch (Throwable tr) {
+                        Log.e(TAG, "OH. MY God. Throwable. ", tr);
+                    }
+
+                    startRecording();
+
+                    if (mHandler == null) {
+                        Log.e(TAG, "WTF, Handler is null!!!");
+                    } else {
+                        Log.v(TAG, "Got a handler!");
+                        mHandler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                stopRecording();
+                                Intent result = new Intent();
+                                result.setAction(WearScriptBroadcastReceiver.RECORD_RESULT_ACTION);
+                                result.putExtra("path", outputPath);
+                                //sendBroadcast(result);
+                                setResult(RESULT_OK, result);
+                                Log.v(TAG, "Stopped recording, set result, finishing.");
+                                wl.release();
+                                finish();
+                            }
+                        }, duration * 1000);
+                    }
+                    //dummy.setVisibility(View.INVISIBLE);
+                }
+
+                @Override
+                public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i2, int i3) {
+
+                }
+
+                @Override
+                public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
+
+                }
+            });
+
             cameraPreview.getHolder().addCallback(this);
             cameraPreview.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+            dummy.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+
+
             frame = (FrameLayout)super.findViewById(R.id.camera_preview);
             frame.addView(this.cameraPreview);
+            frame.addView(this.dummy);
+
+
+
+            mp = MediaPlayer.create(this,Uri.parse("file:///sdcard/wearscript/awesome_video2.mp4"));
+            mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mediaPlayer)
+                {
+                    mediaPlayer.start();
+                }
+            });
+
         }
     }
 
@@ -151,7 +243,9 @@ public class RecordActivity extends Activity implements SurfaceHolder.Callback {
         mediaRecorder.setAudioEncoder(profile.audioCodec);
 
         mediaRecorder.setOutputFile(getOutputMediaFile().toString());
-        mediaRecorder.setPreviewDisplay(cameraPreview.getHolder().getSurface());
+
+
+        mediaRecorder.setPreviewDisplay(dummy.getHolder().getSurface());
 
         try {
             mediaRecorder.prepare();
@@ -244,55 +338,7 @@ public class RecordActivity extends Activity implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        if (camera == null) {
-            camera = getCameraInstanceRetry();
-        }
-
-        if (DBG) Log.v(TAG, "Is camera null? " + (camera == null));
-        if (DBG) Log.v(TAG, "is holder null? " + (holder == null));
-
-        try {
-            camera.setPreviewDisplay(holder);
-
-            //DEBUG
-            Camera.Parameters params = camera.getParameters();
-            params.setPreviewFormat(ImageFormat.NV21);
-            params.setPreviewSize(640, 480);
-            List<String> FocusModes = params.getSupportedFocusModes();
-            if (FocusModes != null && FocusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
-                params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
-            }
-            params.setPreviewFpsRange(30000, 30000);
-            camera.setParameters(params);
-            holder.setFixedSize(640, 360);
-            camera.startPreview();
-        } catch (IOException e) {
-            Log.d(TAG, "Error setting camera preview: " + e.getMessage());
-        } catch (Throwable tr) {
-            Log.e(TAG, "OH. MY God. Throwable. ", tr);
-        }
-
-        startRecording();
-
-        if (mHandler == null) {
-            Log.e(TAG, "WTF, Handler is null!!!");
-        } else {
-            Log.v(TAG, "Got a handler!");
-            this.mHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    stopRecording();
-                    Intent result = new Intent();
-                    result.setAction(WearScriptBroadcastReceiver.RECORD_RESULT_ACTION);
-                    result.putExtra("path", outputPath);
-                    //sendBroadcast(result);
-                    setResult(RESULT_OK, result);
-                    Log.v(TAG, "Stopped recording, set result, finishing.");
-                    wl.release();
-                    finish();
-                }
-            }, duration * 1000);
-        }
+          mp.setDisplay(holder);
     }
 
     @Override
