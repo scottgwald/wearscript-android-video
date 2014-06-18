@@ -7,9 +7,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.VideoView;
-
-import com.wearscript.video.R;
-
 import java.io.File;
 
 public class PlaybackActivity extends Activity implements MediaPlayer.OnPreparedListener,
