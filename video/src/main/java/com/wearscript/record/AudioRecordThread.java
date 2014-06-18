@@ -118,7 +118,6 @@ public class AudioRecordThread extends Thread {
     private void writeAudioDataToFile() {
         int totalAudioLen = buffers.size() * bufferSize;
         int totalDataLen = (totalAudioLen * NUM_CHANNELS * BITS_PER_SAMPLE / 8) + 36;
-        //String filePath = audioFileName();
         byte header[] = new byte[WAV_HEADER_LENGTH];
         byte wavFile[] = new byte[totalAudioLen + header.length];
 
