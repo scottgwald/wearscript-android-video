@@ -21,6 +21,7 @@ public class AudioRecordThread extends Thread {
     private static final int RECORDER_SAMPLERATE = 8000;
     private static final int ENCODING_TYPE = AudioFormat.ENCODING_PCM_16BIT;
     public static final int WAV_HEADER_LENGTH = 44;
+    public static final String FILEPATH = "filepath";
     private final int CHANNEL_TYPE = AudioFormat.CHANNEL_IN_MONO;
     private final int NUM_CHANNELS = 1;
     private byte BITS_PER_SAMPLE = 16;
@@ -189,7 +190,7 @@ public class AudioRecordThread extends Thread {
             e.printStackTrace();
         }
 
-        Intent intent = new Intent("com.wearscript.record.FILE_WRITTEN_AUDIO").putExtra("filepath", latestFilePath);
+        Intent intent = new Intent("com.wearscript.record.FILE_WRITTEN_AUDIO").putExtra(FILEPATH, latestFilePath);
         context.sendBroadcast(intent);
         Log.d(LOG_TAG, "Sending broadcast: com.wearscript.record.FILE_WRITTEN_AUDIO");
     }
