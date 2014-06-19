@@ -20,9 +20,6 @@ public class AudioRecorder extends Service {
 
         Log.d(LOG_TAG, "Service Started");
         createDirectory();
-
-        recorder = new AudioRecordThread(this);
-		recorder.start();
     }
 
     @Override
@@ -48,7 +45,10 @@ public class AudioRecorder extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent.getAction() != null) {
-            if (intent.getAction().equals("com.wearscript.record.SAVE_AUDIO")) {
+            if (intent.getAction().equals("com.wearscript.record.RECORD_AUDIO")) {
+                recorder = new AudioRecordThread(this, intent.getStringExtra("fileName"));
+                recorder.start();
+            } else if (intent.getAction().equals("com.wearscript.record.SAVE_AUDIO")) {
                 recorder.writeAudioDataToFile();
             } else if (intent.getAction().equals("com.wearscript.record.STOP_AUDIO")) {
                 recorder.stopRecording();

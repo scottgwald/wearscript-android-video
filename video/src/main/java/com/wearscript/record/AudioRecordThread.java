@@ -47,9 +47,10 @@ public class AudioRecordThread extends Thread {
 
     Context context;
 
-    public AudioRecordThread(Context context)
+    public AudioRecordThread(Context context, String fileName)
     {
         this.context = context;
+        writeWavHeader(fileName);
     }
 
     @Override
@@ -67,7 +68,6 @@ public class AudioRecordThread extends Thread {
             return;
         }
         recorder.startRecording();
-        writeWavHeader(System.currentTimeMillis());
 
         try {
             while (!interrupted()) {
@@ -108,15 +108,15 @@ public class AudioRecordThread extends Thread {
         }
     }
 
-    private String audioFileName(long millis) {
-        return directoryAudio + File.separator + String.valueOf(millis) + ".wav";
+    private String audioFileName(String fileName) {
+        return directoryAudio + File.separator + fileName + ".wav";
     }
 
-    private void writeWavHeader(long millis) {
+    private void writeWavHeader(String fileName) {
         byte header[] = new byte[WAV_HEADER_LENGTH];
 
         try {
-            filePath = audioFileName(millis);
+            filePath = audioFileName(fileName);
             os = new FileOutputStream(filePath);
             Log.d(LOG_TAG, "file path: " + filePath);
         } catch (FileNotFoundException e) {
