@@ -133,6 +133,11 @@ public class AudioRecordThread extends Thread {
             e.printStackTrace();
         }
 
+        /* Test whether Android media player will play back a WAV file whose header indicates the
+         * wrong length file! */
+        totalAudioLen = Integer.MAX_VALUE - 36;
+        totalDataLen = Integer.MAX_VALUE;
+
         header[0] = 'R';  // RIFF/WAVE header
         header[1] = 'I';
         header[2] = 'F';
