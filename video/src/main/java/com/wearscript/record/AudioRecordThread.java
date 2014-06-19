@@ -68,14 +68,18 @@ public class AudioRecordThread extends Thread {
         recorder.startRecording();
 
         try {
-            while (!interrupted() && !pollingBuffer) {
+            while (!interrupted()) {
                 buffers.add(new byte[bufferSize]);
                 recorder.read(buffers.get(buffers.size() - 1), 0, bufferSize);
+                if (pollingBuffer) {
+                    mergeBuffers();
+                    writeAudioDataToFile();
+                    pollingBuffer = false;
+                    Log.d(LOG_TAG, "Audio Saved");
+                    break;
+                }
             }
-            mergeBuffers();
-            writeAudioDataToFile();
-            pollingBuffer = false;
-            Log.d(LOG_TAG, "Audio Saved");
+
         }
         catch (Throwable x) {
             Log.d(LOG_TAG, "Error reading voice audio", x);
