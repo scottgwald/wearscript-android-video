@@ -47,12 +47,13 @@ public class AudioRecorder extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent.getAction() != null && intent.getAction().equals("com.wearscript.record.SAVE_AUDIO")) {
-            Log.d(LOG_TAG, "Got message");
-            long millis = intent.getExtras().getLong(MILLIS_EXTRA_KEY);
-            Log.d(LOG_TAG, "millis: " + millis);
-            String filepath = recorder.startPolling(millis);
-            Log.d(LOG_TAG, "filepath: " + filepath);
+        if (intent.getAction() != null) {
+            if (intent.getAction().equals("com.wearscript.record.SAVE_AUDIO")) {
+                recorder.writeAudioDataToFile();
+            } else if (intent.getAction().equals("com.wearscript.record.STOP_AUDIO")) {
+                recorder.stopRecording();
+                stopSelf();
+            }
         }
         return 0;
     }

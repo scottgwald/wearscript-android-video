@@ -33,9 +33,10 @@ public class AudioRecordThread extends Thread {
 
     private final int bufferSize = 160; //Each buffer holds 1/100th of a second.
     private boolean pollingBuffer = false;
-    private String latestFilePath = null;
 
     AudioRecord recorder = null;
+    FileOutputStream os = null;
+    String filePath;
 
     /**
      * Give the thread high priority so that it's not cancelled unexpectedly, and start it
@@ -66,20 +67,13 @@ public class AudioRecordThread extends Thread {
             return;
         }
         recorder.startRecording();
+        writeWavHeader(System.currentTimeMillis());
 
         try {
             while (!interrupted()) {
                 buffers.add(new byte[bufferSize]);
                 recorder.read(buffers.get(buffers.size() - 1), 0, bufferSize);
-                if (pollingBuffer) {
-                    mergeBuffers();
-                    writeAudioDataToFile();
-                    pollingBuffer = false;
-                    Log.d(LOG_TAG, "Audio Saved");
-                    break;
-                }
             }
-
         }
         catch (Throwable x) {
             Log.d(LOG_TAG, "Error reading voice audio", x);
@@ -95,21 +89,20 @@ public class AudioRecordThread extends Thread {
         }
     }
 
-    public String startPolling(long millis) {
-        pollingBuffer = true;
-        latestFilePath = audioFileName(millis);
-        return latestFilePath;
-    }
-
     private void mergeBuffers() {
         Log.d(LOG_TAG, "in mergeBuffers()");
         int i;
         int j;
         int ix = 0;
-        totalBuffer = new byte[buffers.size() * bufferSize];
-        for (i = 0; i < buffers.size(); i++) {
+
+        ArrayList<byte[]> copy = (ArrayList<byte[]>) buffers.clone();
+        buffers = new ArrayList<byte[]>();
+
+        totalBuffer = new byte[copy.size() * bufferSize];
+        for (i = 0; i < copy.size(); i++) {
             for(j = 0; j<bufferSize; j++) {
-                totalBuffer[ix] = buffers.get(i)[j];
+                byte x = copy.get(i)[j];
+                totalBuffer[ix] = x;
                 ix++;
             }
         }
@@ -119,24 +112,21 @@ public class AudioRecordThread extends Thread {
         return directoryAudio + File.separator + String.valueOf(millis) + ".wav";
     }
 
-    private void writeAudioDataToFile() {
-        int totalAudioLen = buffers.size() * bufferSize;
-        int totalDataLen = (totalAudioLen * NUM_CHANNELS * BITS_PER_SAMPLE / 8) + 36;
+    private void writeWavHeader(long millis) {
         byte header[] = new byte[WAV_HEADER_LENGTH];
-        byte wavFile[] = new byte[totalAudioLen + header.length];
 
-        FileOutputStream os = null;
         try {
-            os = new FileOutputStream(latestFilePath);
-            Log.d(LOG_TAG, "file path: " + latestFilePath);
+            filePath = audioFileName(millis);
+            os = new FileOutputStream(filePath);
+            Log.d(LOG_TAG, "file path: " + filePath);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
 
         /* Test whether Android media player will play back a WAV file whose header indicates the
          * wrong length file! */
-        totalAudioLen = Integer.MAX_VALUE - 36;
-        totalDataLen = Integer.MAX_VALUE;
+        int totalAudioLen = Integer.MAX_VALUE - 36;
+        int totalDataLen = Integer.MAX_VALUE;
 
         header[0] = 'R';  // RIFF/WAVE header
         header[1] = 'I';
@@ -183,14 +173,16 @@ public class AudioRecordThread extends Thread {
         header[42] = (byte) ((totalAudioLen >> 16) & 0xff);
         header[43] = (byte) ((totalAudioLen >> 24) & 0xff);
 
-        System.arraycopy(header, 0, wavFile, 0, header.length);
-        System.arraycopy(totalBuffer, 0, wavFile, header.length, totalBuffer.length);
-
         try {
-            os.write(wavFile, 0, wavFile.length);
+            os.write(header, 0, header.length);
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void stopRecording() {
+        Log.d(LOG_TAG, "in stopRecording()");
+        writeAudioDataToFile();
 
         try {
             os.close();
@@ -198,7 +190,19 @@ public class AudioRecordThread extends Thread {
             e.printStackTrace();
         }
 
-        Intent intent = new Intent("com.wearscript.record.FILE_WRITTEN_AUDIO").putExtra(FILEPATH, latestFilePath);
+        interrupt();
+    }
+
+    public void writeAudioDataToFile() {
+        mergeBuffers();
+
+        try {
+            os.write(totalBuffer, 0, totalBuffer.length);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Intent intent = new Intent("com.wearscript.record.FILE_WRITTEN_AUDIO").putExtra(FILEPATH, filePath);
         context.sendBroadcast(intent);
         Log.d(LOG_TAG, "Sending broadcast: com.wearscript.record.FILE_WRITTEN_AUDIO");
     }

@@ -50,6 +50,7 @@
             <intent-filter>
                 <action android:name="com.wearscript.record.RECORD_AUDIO" />
                 <action android:name="com.wearscript.record.SAVE_AUDIO" />
+                <action android:name="com.wearscript.record.STOP_AUDIO" />
             </intent-filter>
 
         </service>
