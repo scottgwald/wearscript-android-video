@@ -46,7 +46,7 @@ public class AudioRecorder extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent.getAction() != null) {
             if (intent.getAction().equals("com.wearscript.record.RECORD_AUDIO")) {
-                recorder = new AudioRecordThread(this, intent.getStringExtra("fileName"));
+                recorder = new AudioRecordThread(this, intent.getStringExtra("filePath"));
                 recorder.start();
             } else if (intent.getAction().equals("com.wearscript.record.SAVE_AUDIO")) {
                 recorder.writeAudioDataToFile();

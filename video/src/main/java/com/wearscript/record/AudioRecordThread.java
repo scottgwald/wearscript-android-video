@@ -47,10 +47,10 @@ public class AudioRecordThread extends Thread {
 
     Context context;
 
-    public AudioRecordThread(Context context, String fileName)
+    public AudioRecordThread(Context context, String filePath)
     {
         this.context = context;
-        writeWavHeader(fileName);
+        writeWavHeader(filePath);
     }
 
     @Override
@@ -112,11 +112,11 @@ public class AudioRecordThread extends Thread {
         return directoryAudio + File.separator + fileName + ".wav";
     }
 
-    private void writeWavHeader(String fileName) {
+    private void writeWavHeader(String filePath) {
         byte header[] = new byte[WAV_HEADER_LENGTH];
 
         try {
-            filePath = audioFileName(fileName);
+            this.filePath = filePath;
             os = new FileOutputStream(filePath);
             Log.d(LOG_TAG, "file path: " + filePath);
         } catch (FileNotFoundException e) {
