@@ -1,4 +1,4 @@
-package com.wearscript.video;
+package com.wearscript.record;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -20,8 +20,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-
-import com.wearscript.video.WearScriptBroadcastReceiver;
 
 public class RecordActivity extends Activity implements SurfaceHolder.Callback {
     private final static String TAG = "RecordActivity";

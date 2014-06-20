@@ -1,4 +1,4 @@
-package com.wearscript.video;
+package com.wearscript.record;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -7,9 +7,9 @@ import android.util.Log;
 
 public class WearScriptBroadcastReceiver extends BroadcastReceiver {
 
-    public static final String PLAYBACK_ACTION = "com.wearscript.video.PLAYBACK";
-    public static final String RECORD_ACTION = "com.wearscript.video.RECORD";
-    public static final String RECORD_RESULT_ACTION = "com.wearscript.video.RECORD_RESULT";
+    public static final String PLAYBACK_ACTION = "com.wearscript.record.PLAYBACK";
+    public static final String RECORD_ACTION = "com.wearscript.record.RECORD";
+    public static final String RECORD_RESULT_ACTION = "com.wearscript.record.RECORD_RESULT";
     private static final String TAG = "WearScriptBroadcastReceiver";
     private static final boolean DBG = true;
 
