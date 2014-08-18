@@ -263,6 +263,7 @@ public class RecordActivity extends Activity implements SurfaceHolder.Callback {
                 params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
             }
             params.setPreviewFpsRange(30000, 30000);
+            params.setRecordingHint(true);
             camera.setParameters(params);
             holder.setFixedSize(640, 360);
             camera.startPreview();
